@@ -28,7 +28,10 @@
 // Seeds its own two notes through the app's IPC, and makes the thread it says
 // has no outline (⌘T in the thread pane, left unsent). Run against a throwaway
 // LANES_VAULT and LANES_STATE. It runs the wide case in a single pane, so give
-// the window room. See checks/README.md.
+// the window room: at 1440 the pane has a margin. A smaller screen, such as a
+// hosted runner's, does not give the window its 1440, and there the single
+// pane is narrow too — so it holds that pane to the narrow case instead, and
+// says which it held (`onePaneWide`). See checks/README.md.
 (async () => {
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
   const click = (el) => el && el.dispatchEvent(new MouseEvent('click', { bubbles: true }))
@@ -261,6 +264,8 @@
   /* ---------- it is an overlay: the document does not move ---------- */
 
   const openLeft = textLeft()
+  const pad = () => parseFloat(getComputedStyle(scroller()).paddingLeft)
+  const openPad = pad()
   const openBox = box(toc())
   log.openTextLeft = openLeft
   log.openPanelWidth = Math.round(openBox.width)
@@ -278,6 +283,18 @@
   log.closedTickGap = tickGap()
   log.ticksClearTheText = tickGap() >= 8
   log.textDidNotMove = textLeft() === openLeft
+  // Wide is a pane whose centred gutter, shut, is already the outline's
+  // margin: the panel's 172 (TOC_ROOM, Outline.tsx) and the 26 every pane
+  // keeps (MIN_PAD, layout.ts). There the document does not move. Narrow, the
+  // pane made the margin by moving the column right, and shutting gives back
+  // exactly that room and no more. Read from the shut gutter alone, so a text
+  // that moves in a wide pane is a failure, not a narrow pane.
+  const room = openPad - pad()
+  log.onePaneWide = pad() >= 26 + 172
+  log.onePaneRoom = Math.round(room)
+  log.textMovedOnlyForTheRoom = log.onePaneWide
+    ? log.textDidNotMove
+    : room > 0 && Math.abs(openLeft - textLeft() - room) <= 1
   // Closed is still the overview: one tick per heading.
   log.closedKeepsEveryRow = rows().length === log.labels.length
   click(chevron())
@@ -523,7 +540,7 @@
     log.sitsLeftOfTheText &&
     log.closes &&
     log.ticksClearTheText &&
-    log.textDidNotMove &&
+    log.textMovedOnlyForTheRoom &&
     log.closedKeepsEveryRow &&
     log.opensAgain &&
     log.textStillDidNotMove &&

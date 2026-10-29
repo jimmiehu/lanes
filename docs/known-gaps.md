@@ -96,6 +96,11 @@ Said here so nobody has to find it out. Back to the [README](../README.md).
 - **CI runs the driven smoke list without a promise:** a hosted macOS runner
   may have no window server to give the app, so that step may not fail the
   build.
+- **`outline.js` holds the wide case only where the window gets its 1440.**
+  On a smaller screen, such as a hosted runner's, the single pane is narrow,
+  and the check holds it to the narrow case instead (`onePaneWide` in its
+  result says which). The overlay that leaves the text where it is is then
+  not checked on that machine.
 - **No check installs a real update.** `update-ready.js` and `update-quit.js`
   run in development, where main writes down the install it would have
   started (`swap-plan.json`) instead of starting it; `swap.mjs` runs

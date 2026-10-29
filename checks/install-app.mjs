@@ -114,10 +114,14 @@ ok('refresh.sh has a say and a fail', !!fn('say') && !!fn('fail'))
 const harmless = !/\b(npm|pack\.sh|osascript|pgrep|rm|cp|open|xattr|Applications)\b/.test(code)
 ok('what is lifted names nothing that builds, quits, removes or copies', harmless)
 
+// --norc: a bash given -c, a socket for stdin (which is what Node hands it)
+// and no SHLVL takes itself to be run by sshd and reads ~/.bashrc first, and
+// whatever that prints lands in what say and fail are held to. (A hosted
+// runner's .bashrc runs brew.) refresh.sh is run as a file, which never does.
 const run = (hook, line) =>
-  spawnSync('bash', ['-c', `${preamble}\n${line}\necho after`], {
+  spawnSync('bash', ['--norc', '-c', `${preamble}\n${line}\necho after`], {
     encoding: 'utf8',
-    env: { PATH: process.env.PATH, ...(hook ? { LANES_HOOK: '1' } : {}) }
+    env: { PATH: process.env.PATH, HOME: process.env.HOME, ...(hook ? { LANES_HOOK: '1' } : {}) }
   })
 const json = (s) => {
   try {

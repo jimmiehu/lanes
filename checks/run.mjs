@@ -385,21 +385,23 @@ async function runDriven(name) {
   return { name, ...res, seconds: Math.round((Date.now() - started) / 1000) }
 }
 
-function runNode() {
+function runNode(
+  list = [
+    ...(manifest.node ?? []).map((n) => [n, ['--experimental-strip-types']]),
+    ...(manifest.nodeNoStrip ?? []).map((n) => [n, []])
+  ],
+  dir = CHECKS
+) {
   const results = []
   const w = { dir: mkdtempSync(join(TMP, 'lanes-check-')) }
   w.vault = join(w.dir, 'vault')
   w.state = join(w.dir, 'state')
   cpSync(SAMPLE, w.vault, { recursive: true })
   mkdirSync(w.state)
-  const list = [
-    ...(manifest.node ?? []).map((n) => [n, ['--experimental-strip-types']]),
-    ...(manifest.nodeNoStrip ?? []).map((n) => [n, []])
-  ]
   for (const [entry, flags] of list) {
     const [file, ...args] = entry.split(' ')
     const started = Date.now()
-    const r = spawnSync(process.execPath, [...flags, join(CHECKS, file), ...args], {
+    const r = spawnSync(process.execPath, [...flags, join(dir, file), ...args], {
       cwd: REPO,
       encoding: 'utf8',
       env: envFor(w, {}),
@@ -416,6 +418,12 @@ function runNode() {
       seconds: Math.round((Date.now() - started) / 1000)
     })
     console.log(`${results.at(-1).verdict.padEnd(9)} ${file}`)
+    // And which of its cases failed, from its own last lines: the log file is
+    // gone with the machine on a hosted runner.
+    if (r.status !== 0) {
+      const own = `${r.stdout}\n${r.stderr}`.trim().split('\n').filter(Boolean)
+      for (const l of own.slice(-20)) console.log(`          ${l}`)
+    }
   }
   cleanup(w)
   return results
@@ -450,6 +458,28 @@ async function selfTest() {
     encoding: 'utf8'
   })
   say('runner exits on --vault ~', r.status === 2 && /refusing the vault/.test(r.stderr), r.stderr.trim())
+
+  // A node check that fails says which of its cases did, in the runner's own
+  // output: a hosted runner keeps no log file to read afterwards.
+  const broken = mkdtempSync(join(TMP, 'lanes-selftest-'))
+  writeFileSync(
+    join(broken, 'broken.mjs'),
+    "console.log('  FAIL the one case that broke')\nconsole.log('broken: 1 passed, 1 failed')\nprocess.exit(1)\n"
+  )
+  const said = []
+  const log = console.log
+  console.log = (...a) => said.push(a.join(' '))
+  try {
+    runNode([['broken.mjs', []]], broken)
+  } finally {
+    console.log = log
+    rmSync(broken, { recursive: true, force: true })
+  }
+  say(
+    'a failing node check names its failing case',
+    said.some((l) => l.includes('FAIL the one case that broke')),
+    said.join(' | ').slice(0, 160)
+  )
 
   // Main's refusal, as a function: every combination, without booting anything
   // that could reach a real state file.

@@ -1,0 +1,47 @@
+{
+  "name": "lanes",
+  "version": "0.1.0",
+  "description": "Notes and Claude Code threads side by side, over the Claude Code CLI you already have",
+  "main": "./out/main/index.js",
+  "author": "Simon Hoeher",
+  "license": "MIT",
+  "homepage": "https://github.com/jimmiehu/lanes#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jimmiehu/lanes.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jimmiehu/lanes/issues"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "npm run typecheck && electron-vite build",
+    "start": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "checks": "node checks/run.mjs --smoke",
+    "checks:node": "node checks/run.mjs --node",
+    "pack": "bash build/pack.sh",
+    "install-app": "bash build/refresh.sh",
+    "follow": "bash build/follow.sh",
+    "postinstall": "install-electron"
+  },
+  "devDependencies": {
+    "@codemirror/autocomplete": "^6.20.3",
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.13",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^5.0.0",
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.7.2",
+    "vite": "^7.0.0"
+  }
+}

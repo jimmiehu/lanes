@@ -1,0 +1,402 @@
+{
+  "node": [
+    "pathways.mjs",
+    "transcript.mjs",
+    "limit.mjs",
+    "session-clock.mjs",
+    "usage.mjs",
+    "schedule.mjs",
+    "details.mjs",
+    "find-rule.mjs",
+    "signin.mjs",
+    "api-error.mjs",
+    "md-live.mjs",
+    "comments.mjs",
+    "update.mjs",
+    "line-diff.mjs",
+    "line-ends.mjs",
+    "written.mjs",
+    "safety-default.mjs",
+    "how-to-open.mjs",
+    "ipc-paths.mjs",
+    "open-outside.mjs",
+    "no-network.mjs",
+    "dev-gates.mjs",
+    "lane-detect.mjs",
+    "read-only-rule.mjs",
+    "vault-roots.mjs",
+    "vault-chooser.mjs",
+    "open-links.mjs",
+    "install-app.mjs"
+  ],
+  "nodeNoStrip": [
+    "edit-fuzz.mjs",
+    "note-moves.mjs",
+    "command-turn.mjs",
+    "context-window.mjs",
+    "cli-grant.mjs",
+    "follow.mjs",
+    "swap.mjs"
+  ],
+  "smoke": [
+    "tabs",
+    "rail",
+    "palette",
+    "new-note",
+    "note-ops",
+    "note-file",
+    "doc",
+    "outline",
+    "file-menu",
+    "prompts-settings"
+  ],
+  "checks": {
+    "autonomous-ask.js": {},
+    "blank-tab.js": {},
+    "branch.js": {
+      "live": true,
+      "timeout": 180,
+      "note": "forks the first answer it finds, so it needs a transcript; the stand-in writes none",
+      "threads": false
+    },
+    "chords.js": {},
+    "cmd-t-pane.js": {},
+    "code-wrap.js": {
+      "fixture": "thread"
+    },
+    "comments-pass.js": {
+      "stub": "review",
+      "timeout": 150
+    },
+    "comments-read.js": {
+      "export": true,
+      "after": "node --experimental-strip-types checks/comments-pdf.mjs {export}/comments-check-*.pdf",
+      "timeout": 150,
+      "note": "the PDF is named after a note stamped per run; the export dir is fresh, so the glob matches exactly one file (the check also logs it as pdfName)"
+    },
+    "comments-write.js": {},
+    "comments-anywhere.js": {},
+    "update-ready.js": {
+      "update": true,
+      "stub": "slow",
+      "after": "node checks/update-plan.mjs {follow} reopen"
+    },
+    "update-quit.js": {
+      "update": true,
+      "after": "node checks/update-plan.mjs {follow} quit"
+    },
+    "context-live.js": {
+      "stub": "window"
+    },
+    "copy-block.js": {},
+    "doc.js": {
+      "fixture": "thread",
+      "note": "thread, not sample: on a vault with no thread its thread half reports 'not run'; the thread fixture is what serves it"
+    },
+    "editor.js": {
+      "timeout": 120
+    },
+    "editortraps.js": {
+      "timeout": 150
+    },
+    "esc-discard.js": {
+      "timeout": 120
+    },
+    "file-menu.js": {
+      "fixture": "thread"
+    },
+    "find-bar.js": {
+      "fixture": "thread",
+      "timeout": 120,
+      "note": "the thread half wants a thread long enough to scroll past its head"
+    },
+    "find-words.js": {
+      "note": "the sample holds the water note; the accented title it seeds itself, under a filename without the word it folds to"
+    },
+    "fold.js": {
+      "timeout": 120
+    },
+    "head.js": {
+      "fixture": "thread"
+    },
+    "headings.js": {},
+    "highlight.js": {
+      "seed": {
+        "theme": "light"
+      }
+    },
+    "images.js": {
+      "live": true,
+      "timeout": 120,
+      "note": "asks the model to name a colour only the pasted image shows"
+    },
+    "jot.js": {
+      "fixture": "empty",
+      "timeout": 300,
+      "note": "the new-note timing check: an empty vault is filled with 1,500 notes (~60MB) through the app before the clock starts, so it runs long"
+    },
+    "land-loaded.js": {
+      "runs": 2,
+      "note": "the first run fills the strip, the second starts from the state file and is the check"
+    },
+    "lanes-none.js": {
+      "seed": {
+        "lanes": []
+      },
+      "note": "starts with no lanes, then patches one in (Garden, on projects/garden) and waits for the rail to show it"
+    },
+    "limit-live.js": {
+      "stub": "limit",
+      "note": "the README also runs it against the fault stand-in, where it passes on its no-card branch; one entry holds one stand-in, so that second run is not listed here"
+    },
+    "link-complete.js": {},
+    "live-md.js": {
+      "timeout": 150
+    },
+    "long-note.js": {
+      "timeout": 150
+    },
+    "make-from-palette.js": {
+      "timeout": 120
+    },
+    "many-tabs.js": {
+      "note": "opens ten rail rows: the sample's hub/rim/spoke plus enough notes touched today to fill RECENT"
+    },
+    "models.js": {
+      "stub": "ok",
+      "timeout": 120,
+      "note": "not live: the stand-in's model probe refuses an id with a space in the CLI's own words and takes any other, which is all this asks"
+    },
+    "new-menu.js": {},
+    "new-note-folder.js": {
+      "fixture": "empty",
+      "note": "makes three notes and reads back where they landed; another note in the vault would answer for them"
+    },
+    "new-note.js": {
+      "note": "makes projects/Reading/palette-probe.md by folder/name; the folder is made fresh in the sample"
+    },
+    "new-thread-focus.js": {},
+    "note-copy.js": {},
+    "note-file.js": {},
+    "note-newtab.js": {
+      "timeout": 120
+    },
+    "note-ops.js": {
+      "timeout": 150,
+      "note": "waits up to 45 s for the vault sweep to index the link it seeded"
+    },
+    "note-scroll.js": {},
+    "note-sync.js": {
+      "timeout": 180
+    },
+    "note-writing.js": {
+      "timeout": 120
+    },
+    "outline.js": {
+      "timeout": 150
+    },
+    "palette-comments.js": {
+      "stub": "slow"
+    },
+    "palette-marks.js": {
+      "fixture": "thread",
+      "note": "forks the fixture's thread, so the fixture is laid down fresh for it"
+    },
+    "palette-skills.js": {
+      "stub": "slow",
+      "seed": {
+        "skillsOff": [
+          "quiet-one"
+        ]
+      },
+      "note": "the sample holds echo-word, garden-check and quiet-one; the check's lane-named skill and its lane must match garden-check / Garden"
+    },
+    "palette.js": {},
+    "pane-empty.js": {
+      "timeout": 150,
+      "note": "the counted chip can wait up to 45 s for the vault sweep"
+    },
+    "pane-switch.js": {},
+    "pane-toggle.js": {
+      "fixture": "thread",
+      "note": "opens a thread row and two note rows; the thread fixture has one thread and five notes, the sample no thread"
+    },
+    "panechrome.js": {
+      "fixture": "thread"
+    },
+    "path-ticks.js": {
+      "live": true,
+      "timeout": 300,
+      "note": "spends five turns with long answers, and forks",
+      "threads": false
+    },
+    "paths-live.js": {
+      "live": true,
+      "timeout": 180,
+      "threads": false
+    },
+    "pause.js": {
+      "fixture": "thread"
+    },
+    "pdf.js": {
+      "export": true,
+      "after": "node --experimental-strip-types checks/pdf-file.mjs {export}/everything.pdf",
+      "note": "opens the sample's everything.md by its rail row"
+    },
+    "pinned.js": {
+      "timeout": 120
+    },
+    "prompts-palette.js": {
+      "stub": "slow",
+      "timeout": 120,
+      "seed": {
+        "skillsOff": [
+          "echo-word",
+          "garden-check",
+          "quiet-one"
+        ]
+      },
+      "note": "The sample's skills are switched off: `/` alone must list the one prompt."
+    },
+    "prompts-settings.js": {},
+    "rail-slide.js": {},
+    "rail-swipe.js": {},
+    "rail.js": {},
+    "read-default.js": {},
+    "recent-shelf.js": {},
+    "resend.js": {
+      "live": true,
+      "timeout": 180,
+      "threads": false
+    },
+    "reveal-and-select.js": {
+      "timeout": 150,
+      "note": "opens one Finder window when it passes; the rail-row half can wait for the vault sweep"
+    },
+    "roles.js": {
+      "fixture": "thread",
+      "note": "the thread fixture runs both halves: a note row and a thread row"
+    },
+    "roles2.js": {},
+    "roundtrip.js": {
+      "timeout": 150,
+      "note": "waits up to 45 s for the vault sweep to index the last save"
+    },
+    "schedule-live.js": {
+      "stub": "usage",
+      "timeout": 240,
+      "note": "waits for a real minute to come round and for the scheduler's own thirty-second look",
+      "seed": {
+        "flags": {
+          "schedules": true
+        }
+      }
+    },
+    "seam.js": {},
+    "session-clock.js": {},
+    "shedding.js": {},
+    "signed-out.js": {
+      "stub": "signedout",
+      "note": "the stand-in's signedout mode answers auth status with loggedIn false, which is the only state this check asserts anything in",
+      "threads": false
+    },
+    "signin-turn.js": {
+      "skip": "wants the real CLI refusing a token as a synthetic api-error assistant line; the stand-in's signedout turn fails on stderr instead, which would pass without proving the claim"
+    },
+    "sticky-bar.js": {},
+    "sticky-mode.js": {},
+    "tab-drag.js": {
+      "note": "opens ten rail rows: the sample's hub/rim/spoke plus enough notes touched today to fill RECENT"
+    },
+    "tab-edge.js": {
+      "stub": "slow"
+    },
+    "tab-order.js": {},
+    "tab-rename.js": {},
+    "tabs.js": {},
+    "thread-bottom.js": {
+      "fixture": "thread"
+    },
+    "thread-links.js": {
+      "fixture": "thread"
+    },
+    "thread-text.js": {
+      "live": true,
+      "timeout": 180,
+      "note": "lifts a phrase out of a real answer's transcript; the stand-in writes none",
+      "threads": false
+    },
+    "title-late.js": {
+      "live": true,
+      "timeout": 180,
+      "skip": "wants a hand-built transcript with no ai-title line (the thread fixture's has one) and spends a real turn"
+    },
+    "title-once.js": {
+      "timeout": 120
+    },
+    "title-tools.js": {
+      "live": true,
+      "timeout": 120,
+      "note": "needs a first turn that opens with a tool call; the stand-in makes none"
+    },
+    "title.js": {
+      "stub": "ok",
+      "timeout": 120,
+      "note": "not live: the stand-in's ok mode answers the turn and its namer one-shot returns a name, which is all this asks"
+    },
+    "to-start.js": {
+      "fixture": "thread"
+    },
+    "undo.js": {
+      "timeout": 120
+    },
+    "unseen.js": {
+      "stub": "slow"
+    },
+    "usage-live.js": {
+      "stub": "usage",
+      "seed": {
+        "theme": "light"
+      },
+      "env": {
+        "STUB_USED": "0.17"
+      },
+      "note": "the README also runs it at STUB_USED 0.75 and 0.93 and in the dark theme; one entry holds the plain, light case"
+    },
+    "user-wrap.js": {
+      "fixture": "thread"
+    },
+    "vault-change.js": {
+      "stub": "slow",
+      "env": {
+        "STUB_DELAY": "9000"
+      },
+      "note": "a turn held open nine seconds for the question, then over for Change… with nothing running; main refuses a driven run's folder (LANES_VAULT), so nothing is relaunched"
+    },
+    "writing.js": {
+      "timeout": 180
+    },
+    "lanes-crud.js": {
+      "seed": {
+        "laneOverrides": {
+          "5a3e0004-0000-4000-8000-000000000004": "garden",
+          "5a3e0007-0000-4000-8000-000000000007": "gone-lane"
+        }
+      },
+      "note": "the sample's lanes; the seed moves the Ada Lovelace thread into Garden and one more into a lane that is not there, so the delete has three threads to count and overrides to leave alone"
+    },
+    "settings-folders.js": {
+      "seed": {
+        "readOnlyFolders": []
+      },
+      "note": "the sample with no read-only folder, so inbox/ starts writable; makes two untitled notes"
+    },
+    "screenshot.js": {
+      "note": "Not a claim: the README's picture. Run with --shot docs/img and --seed '{\"theme\":\"light\"}' or '{\"theme\":\"dark\"}'."
+    },
+    "palette-threads.js": {
+      "threads": "many",
+      "note": "every thread under THREADS, dated by its lines; note rows name their file"
+    }
+  }
+}

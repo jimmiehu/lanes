@@ -1,0 +1,16 @@
+node_modules/
+out/
+dist/
+.DS_Store
+*.log
+
+*.tsbuildinfo
+*.nosync
+
+build/icon.iconset/
+
+# The signing certificate is per-Mac (see build/sign.sh).
+build/.sign-identity
+
+# Personal Claude Code settings (a build/refresh.sh hook, say); never in the tree.
+.claude/settings.local.json*

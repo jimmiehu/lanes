@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    # Lanes is a Mac app: the checks bundle main-process code, and the driven
+    # ones run the app itself.
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      # Node 24. The build wants 22.12 or later (Vite 7, electron-vite 5), and
+      # the node checks run TypeScript sources directly with
+      # --experimental-strip-types.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      # Pure modules, no app: paths, links, safety, schedules, the grammar.
+      - run: npm run checks:node
+
+      - run: npx electron-vite build
+
+      # The driven smoke list starts the app, brings its window to the front
+      # and drives it, each check in a throwaway vault with a stand-in CLI.
+      # That needs a GUI session, which a hosted runner does not promise, so a
+      # failure here is reported and does not fail the build.
+      - name: Driven smoke checks
+        run: node checks/run.mjs --smoke
+        continue-on-error: true
+        timeout-minutes: 15

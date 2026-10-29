@@ -1,0 +1,334 @@
+/*
+ * Design tokens.
+ *
+ * Every surface, line and text color in the app resolves through these
+ * variables; a component that hardcodes a color is a bug.
+ *
+ * Two things changed from the v2 set and both are load-bearing:
+ *
+ * 1. LIGHT IS THE DEFAULT. `:root` is the paper-toned desk and
+ *    `[data-theme='dark']` is the override. The v2 set had it the other way
+ *    round, so the plain `:root` block below is the one to read first.
+ *
+ * 2. THE PALETTE IS ACHROMATIC. Accents and lane hues are gone. Identity is
+ *    carried by uppercase mono labels and by contrast, never by hue — which is
+ *    what lets a filled `--ink` shape read as the loudest thing on a pane.
+ *
+ * Dark keeps every relationship and inverts only the ground: the desk stays the
+ * darkest surface, sheets sit above it, and `--ink` flips to light so a filled
+ * ink shape is still the loudest thing on the pane.
+ *
+ * `data-theme` on the root is always the RESOLVED value — 'light' or 'dark'.
+ * The three-state preference ('light' | 'dark' | 'auto') lives in app state and
+ * `applyTheme` derives what the document wears, because a document cannot wear
+ * "auto". See lib/theme.ts.
+ */
+:root {
+  /* ---- surfaces ---- */
+  --desk: #edece7;
+  --sheet: #ffffff;
+  --card: #f7f6f2;
+  --strip: #f1f0eb;
+  --foot: #f9f8f4;
+  /* Named for its job, not its value: "sheet" is only lighter than its ground
+     in light mode. --raise is always one step ABOVE whatever it sits on. */
+  --raise: #ffffff;
+
+  /* ---- ink ---- */
+  --ink: #191816;
+  --body: #37332d;
+  --ink2: #3b3833;
+  --ink3: #6e6961;
+  /* Identical in both themes — the one tone that reads correctly against both
+     grounds, which is why every caps label uses it. */
+  --mute: #8b867c;
+  --faint: #b4afa3;
+  --dot: #c4c0b5;
+  --onInk: #ffffff;
+
+  /* ---- lines & fills ---- */
+  --rule: #c9c5bb;
+  --hair: #e7e4da;
+  --edge: #e2e0d9;
+  --div: #eae8e1;
+  --div2: #f0eee8;
+  --hr: #e2dfd6;
+  --hov: #edebe4;
+  --sel: #e9e7e0;
+  --chip: #e4e2da;
+  --bubble: #f2f0ea;
+  --code: #f6f4ee;
+  --inline: #f1efe9;
+  --wash: #faf8f2;
+  --washOn: #fbf9f1;
+  --quiet: #f4f2ec;
+  --focus: #c7c3b8;
+  --track: #dddbd3;
+  --mark: #dfdcd2;
+  --pinhov: #dfdcd1;
+  --pick: #e0ddd2;
+  --knobOn: #ffffff;
+  --knobOff: #ffffff;
+
+  /*
+   * ---- THE HUES, AND WHAT LETS EACH IN ----
+   *
+   * The set is achromatic on purpose: nothing in a document earns a colour, and
+   * every rank in this app is a step on one warm grey ramp. A find match is the
+   * first exception, and it is worth saying why rather than treating it as a
+   * lapse.
+   *
+   * It is not part of the document. It is a transient answer to a question you
+   * just asked — it appears when you type, it is gone when you press escape,
+   * and it belongs to nothing on the page. Contrast alone cannot carry it: the
+   * grey wash it used to be sat in the same ramp as a code block, a quote, a
+   * selected row and a hover, so on a dense transcript you were hunting for a
+   * slightly different grey among six of them. A hue has no rank in this ramp
+   * and cannot be mistaken for one, which is exactly what a mark needs.
+   *
+   * Amber rather than anything else: it is the warm paper's own family, so it
+   * reads as a highlighter laid on the page rather than as an alert.
+   */
+  --find: #ffe4a1;
+  --onFind: #191816;
+  --findNow: #efac2c;
+  --onFindNow: #191816;
+  /*
+   * A note's own highlights, `==like this==` — a marker laid on the page by
+   * whoever wrote it, kept apart from find's amber, which is the app's and
+   * passes. The colour is the reader's to pick (Settings); `--hl` is the one
+   * picked, set by `data-hl` on the root. Lemon, not amber, so a find hit in
+   * a highlight still reads as one.
+   */
+  --hl-yellow: #f8ed98;
+  --hl-green: #d5efc6;
+  --hl-blue: #d2e5f8;
+  --hl-pink: #f8d6e3;
+  --hl-purple: #e3dbf7;
+  --hl-grey: color-mix(in srgb, var(--ink) 10%, transparent);
+  --hl: var(--hl-yellow);
+  /*
+   * The second, asked for: the session clock's ring running low, and nearly
+   * gone — and the card's figures, at the same thresholds. The same argument
+   * lets it in. It is not the document either: it is about the usage window,
+   * said in the top bar, and gone at the next reset.
+   *
+   * Orange leaning to red, and red, so neither can be read as the amber: a
+   * ring running low must never look like a search hit. Dark enough in light
+   * to be read as text on a sheet, since the card's figures wear them too.
+   */
+  --warn: #bd5512;
+  --alarm: #b8322a;
+
+  /* ---- shadows & veils ---- */
+  --veil: rgba(35, 33, 29, 0.28);
+  --veil2: rgba(35, 33, 29, 0.22);
+  --sh1: 0 1px 3px -1px rgba(25, 24, 22, 0.08);
+  --sh1h: 0 2px 8px -2px rgba(25, 24, 22, 0.16);
+  --sh2: 0 30px 70px -24px rgba(35, 33, 29, 0.4);
+  --sh3: 0 26px 60px -22px rgba(35, 33, 29, 0.38);
+  --sh4: 0 18px 44px -16px rgba(35, 33, 29, 0.34);
+  --shk: 0 1px 2px rgba(25, 24, 22, 0.3);
+  /*
+   * Pane elevation, and only pane elevation consumes these. ON is three layers
+   * with one job each: a hairline rim so the sheet keeps an edge at any lift, a
+   * tight contact shadow that does the "resting on something" work, and one
+   * wide cast — negative spread, so it stays under the sheet instead of haloing
+   * it. Warm-neutral throughout: a grey shadow on this desk reads as dirt.
+   * OFF is a tint rather than a background swap — inset 9999px fills the box
+   * over the pane's own --sheet, so the two states share one property and
+   * crossfade, and the pane's radius clips it for free.
+   */
+  --shpOn:
+    0 0 0 1px rgba(25, 24, 22, 0.09),
+    0 3px 6px -2px rgba(35, 33, 29, 0.16),
+    0 26px 54px -18px rgba(35, 33, 29, 0.38);
+  --shpOff:
+    inset 0 0 0 1px rgba(25, 24, 22, 0.05),
+    inset 0 0 0 9999px rgba(25, 24, 22, 0.06);
+
+  /* ---- type ----
+     Two families only, and no serif: a serif note body was tried and rejected
+     because the type change read as a different app rather than a different
+     object. System stacks, because the scale below is calibrated against them. */
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --mono: ui-monospace, Menlo, monospace;
+  /*
+   * The writing surface, and the one place a third family is allowed.
+   *
+   * Not decoration. The editor paints its markdown onto a mirror sitting under
+   * a transparent field, and the two only stay aligned while bold and italic
+   * draw at the SAME ADVANCE WIDTH as regular — which is true of a monospaced
+   * face and false of every proportional one. iA Writer's own duospaced fonts
+   * are cut to that rule and lead the stack, so this becomes exactly the
+   * surface it was modelled on the moment they are installed; `ui-monospace` is
+   * SF Mono, which is a good second. See components/NoteEditor.tsx.
+   */
+  --write: 'iA Writer Quattro S', 'iA Writer Quattro V', 'iA Writer Duo S',
+    'iA Writer Mono S', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Message and note prose only. Chrome — labels, chips, meta — never scales
+     with it: resizing the reading text must not reflow the controls around it. */
+  --msg-sm: 11.5px;
+  /* The reading measure. Content is centred in a pane at this max-width and the
+     tab strip, head, body and composer all align to it. */
+  --measure: 620px;
+}
+
+/* ---------- dark: the same structure, only the ground inverted ---------- */
+:root[data-theme='dark'] {
+  --desk: #111110;
+  --sheet: #1a1a18;
+  --card: #1e1e1c;
+  --strip: #191917;
+  --foot: #1c1c1a;
+  --raise: #33332f;
+
+  --ink: #f3f2ee;
+  --body: #d6d3cb;
+  --ink2: #cac7bf;
+  --ink3: #a29e95;
+  --mute: #8b867c;
+  --faint: #7c7871;
+  --dot: #4e4b45;
+  --onInk: #171715;
+
+  --rule: #494640;
+  --hair: #2b2b28;
+  --edge: #302f2c;
+  --div: #272724;
+  --div2: #212120;
+  --hr: #2c2c29;
+  --hov: #262623;
+  --sel: #2a2a26;
+  --chip: #2e2e2a;
+  --bubble: #252521;
+  --code: #212120;
+  --inline: #282824;
+  --wash: #1f1f1d;
+  --washOn: #222220;
+  --quiet: #232321;
+  --focus: #454340;
+  --track: #3e3e3a;
+  --mark: #3a3934;
+  --pinhov: #333330;
+  --pick: #3a3934;
+  --knobOn: #171715;
+  --knobOff: #c9c5bd;
+
+  /* The mark goes dark-amber and lets the light text through; the current
+     match stays a solid amber block and takes dark ink of its own. */
+  --find: #57410f;
+  --onFind: #f3f2ee;
+  --findNow: #dfa02a;
+  --onFindNow: #17150f;
+  /* Deep enough to keep the light text, each still its own hue. */
+  --hl-yellow: #4a4414;
+  --hl-green: #233f29;
+  --hl-blue: #1d3550;
+  --hl-pink: #4a2434;
+  --hl-purple: #352a52;
+  --hl-grey: color-mix(in srgb, var(--ink) 16%, transparent);
+  /* Lighter, to hold on the dark desk, and still well clear of the amber. */
+  --warn: #ee7a35;
+  --alarm: #ec5f52;
+
+  --veil: rgba(0, 0, 0, 0.6);
+  --veil2: rgba(0, 0, 0, 0.5);
+  --sh1: 0 1px 3px -1px rgba(0, 0, 0, 0.5);
+  --sh1h: 0 2px 10px -2px rgba(0, 0, 0, 0.6);
+  --sh2: 0 30px 70px -24px rgba(0, 0, 0, 0.75);
+  --sh3: 0 26px 60px -22px rgba(0, 0, 0, 0.7);
+  --sh4: 0 18px 44px -16px rgba(0, 0, 0, 0.66);
+  --shk: 0 1px 2px rgba(0, 0, 0, 0.5);
+  /*
+   * The two themes lean on opposite halves of the effect. In light the lift
+   * does the work; on a near-black desk a cast shadow is nearly invisible, so
+   * here the separation is the RIM — warm white, as if the selected pane
+   * catches more light — and a heavier tint seating the other. One shared value
+   * would be invisible in one theme or crude in the other.
+   */
+  --shpOn:
+    0 0 0 1px rgba(255, 253, 247, 0.16),
+    0 3px 6px -2px rgba(0, 0, 0, 0.6),
+    0 28px 58px -18px rgba(0, 0, 0, 0.85);
+  --shpOff:
+    inset 0 0 0 1px rgba(255, 253, 247, 0.04),
+    inset 0 0 0 9999px rgba(0, 0, 0, 0.4);
+}
+
+/*
+ * Pre-hydration only. `:root` above is the light palette and the default
+ * preference is `auto`, so a dark-system user would get a full-screen white
+ * flash between first paint and the state file loading. This block is scoped to
+ * `:root:not([data-theme])`, so the instant applyTheme stamps a resolved value
+ * it stops matching and never fights the real theme.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --desk: #111110;
+    --sheet: #1a1a18;
+    --card: #1e1e1c;
+    --strip: #191917;
+    --foot: #1c1c1a;
+    --raise: #33332f;
+    --ink: #f3f2ee;
+    --body: #d6d3cb;
+    --ink2: #cac7bf;
+    --ink3: #a29e95;
+    --faint: #7c7871;
+    --dot: #4e4b45;
+    --onInk: #171715;
+    --rule: #494640;
+    --hair: #2b2b28;
+    --edge: #302f2c;
+    --div: #272724;
+    --div2: #212120;
+    --hr: #2c2c29;
+    --hov: #262623;
+    --sel: #2a2a26;
+    --chip: #2e2e2a;
+    --bubble: #252521;
+    --code: #212120;
+    --inline: #282824;
+    --wash: #1f1f1d;
+    --washOn: #222220;
+    --quiet: #232321;
+    --focus: #454340;
+    --track: #3e3e3a;
+    --mark: #3a3934;
+    --pinhov: #333330;
+    --pick: #3a3934;
+    --knobOn: #171715;
+    --knobOff: #c9c5bd;
+    --find: #57410f;
+    --onFind: #f3f2ee;
+    --findNow: #dfa02a;
+    --onFindNow: #17150f;
+    --hl-yellow: #4a4414;
+    --hl-green: #233f29;
+    --hl-blue: #1d3550;
+    --hl-pink: #4a2434;
+    --hl-purple: #352a52;
+    --hl-grey: color-mix(in srgb, var(--ink) 16%, transparent);
+    --warn: #ee7a35;
+    --alarm: #ec5f52;
+  }
+}
+
+/* The highlight colour picked in Settings. Yellow needs no rule: it is `--hl`'s own. */
+:root[data-hl='green'] {
+  --hl: var(--hl-green);
+}
+:root[data-hl='blue'] {
+  --hl: var(--hl-blue);
+}
+:root[data-hl='pink'] {
+  --hl: var(--hl-pink);
+}
+:root[data-hl='purple'] {
+  --hl: var(--hl-purple);
+}
+:root[data-hl='grey'] {
+  --hl: var(--hl-grey);
+}

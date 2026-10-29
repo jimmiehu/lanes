@@ -1,0 +1,64 @@
+appId: com.simonhoeher.lanes
+productName: Lanes
+copyright: Simon Hoeher
+
+directories:
+  buildResources: build
+  # dist/ in the checkout, or $LANES_BUILD_DIR: build/pack.sh passes it on.
+  # A checkout in a cloud-synced folder such as Dropbox lives on a
+  # CloudStorage mount, whose file provider stamps every file with
+  # `com.apple.fileprovider` xattrs and re-applies them faster than `xattr -c`
+  # can strip them — and codesign refuses to sign a bundle carrying them. So
+  # pack.sh refuses an output there and asks for a real local directory.
+  output: dist
+
+# Only the bundle and its manifest. Everything else in the repo — the checks,
+# the docs, node_modules — has no business inside the app.
+files:
+  - out/**
+  - package.json
+  - '!**/*.map'
+
+# The sample vault, outside the asar so it can be copied as plain files: the
+# first launch offers it (src/main/vaultChooser.ts reads it from
+# process.resourcesPath/sample-vault), and its .claude/skills come with it.
+extraResources:
+  - from: fixtures/sample-vault
+    to: sample-vault
+  # What installs an update (src/main/update.ts): run from a copy outside the
+  # bundle, since the bundle is what it replaces.
+  - from: build/swap.sh
+    to: swap.sh
+
+# Use the Electron already in node_modules rather than fetching the same version
+# from GitHub. It makes the build offline-capable and removes the one step that
+# could fail for a reason that has nothing to do with this app.
+electronDist: node_modules/electron/dist
+
+asar: true
+# No native modules, so there is nothing to rebuild and no reason to wait for it.
+npmRebuild: false
+
+mac:
+  category: public.app-category.productivity
+  icon: build/icon.icns
+  # Not signed here: build/sign.sh signs the bundle afterwards, with a local
+  # certificate when this Mac has one and ad hoc when it does not. Apple Silicon
+  # refuses to run an entirely unsigned binary, and either is enough for an app
+  # built on the Mac it runs on.
+  identity: null
+  target:
+    - target: dir
+      arch: arm64
+  extendInfo:
+    # What macOS shows when something Lanes runs reaches into these folders.
+    # The CLI is a child of Lanes, so its tool calls are charged to Lanes; the
+    # vault is not in any of them, and the old text claimed it was. These say
+    # what is true, so "Don't Allow" reads as the safe answer it is.
+    NSDesktopFolderUsageDescription: 'Only if you ask Claude to use a file on your Desktop. Lanes itself never needs this folder.'
+    NSDocumentsFolderUsageDescription: 'Only if you ask Claude to use a file in Documents. Lanes itself never needs this folder.'
+    NSDownloadsFolderUsageDescription: 'Only if you ask Claude to use a file in Downloads. Lanes itself never needs this folder.'
+    # Electron's own minimum: its Info.plist says 12.0. A lower one lets macOS
+    # 11 start the app, which then crashes, instead of saying it needs a newer
+    # macOS.
+    LSMinimumSystemVersion: '12.0'

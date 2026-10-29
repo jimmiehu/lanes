@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Lanes</title>
+    <!--
+      img-src takes data: because an image in a turn is carried inline as base64,
+      the way the CLI stores it in its own transcripts. Nothing else is widened:
+      no remote origin, and script-src stays 'self'.
+
+      The four 'none's close what default-src does not reach: a plugin, a frame,
+      a <base> that would re-point every relative address, and a form posting
+      anywhere. connect-src is left to fall back to default-src, which is what
+      lets Vite's own socket reach its dev server, and nothing else reach
+      anything. checks/no-network.mjs holds this line to that.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "lanes": [
+    {
+      "id": "garden",
+      "name": "Garden",
+      "folder": "projects/garden"
+    },
+    {
+      "id": "kitchen",
+      "name": "Kitchen",
+      "folder": "projects/kitchen"
+    }
+  ],
+  "readOnlyFolders": [
+    "inbox/"
+  ],
+  "safety": "standard"
+}

@@ -1,0 +1,1196 @@
+@import './tokens.css';
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  background: var(--desk);
+  font-family: var(--sans);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+input,
+textarea,
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+  margin: 0;
+}
+
+textarea {
+  resize: none;
+}
+
+::placeholder {
+  color: var(--mute);
+}
+
+::selection {
+  background: var(--pick);
+}
+
+/* A link is ink with a ruled underline, not a hue. */
+a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 3px;
+}
+a:hover {
+  text-decoration-color: var(--ink);
+}
+
+/*
+ * The four animations in the design.
+ *
+ * palIn MUST repeat the centring translateX(-50%) in both keyframes: an
+ * animated transform replaces the inline one outright, so omitting it makes the
+ * palette fly in from the right instead of dropping straight down.
+ */
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes palIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+@keyframes veilIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes cursorBlink {
+  0%,
+  48% {
+    opacity: 1;
+  }
+  52%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Kept from v2 — the processing indicator's two, still used until S5 rebuilds
+   it around cursorBlink. */
+@keyframes omPulse {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+@keyframes omSweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+/*
+ * overflow-x is named explicitly on every scroller. Setting only overflow-y to
+ * a non-visible value forces the other axis to compute as auto too, so one long
+ * code line would slide the entire document sideways instead of scrolling
+ * inside its own card.
+ */
+[data-scroll] {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--track) transparent;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--track);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Hover reveals: the × on a tab, the star on a row, a turn's actions. */
+[data-tab] [data-x] {
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+[data-tab]:hover [data-x] {
+  opacity: 1;
+}
+[data-row]:hover [data-pin] {
+  opacity: 1 !important;
+}
+[data-acts] {
+  opacity: 0;
+  transition: opacity 0.13s ease;
+}
+[data-turn]:hover [data-acts] {
+  opacity: 1;
+}
+
+/* The tab strip scrolls but never shows a bar — the tabs themselves are the
+   affordance, and a bar under the strip eats half of it. */
+[data-tabstrip]::-webkit-scrollbar {
+  height: 0;
+  width: 0;
+}
+
+/*
+ * Find-in-pane. Painted by the CSS Custom Highlight API, so no markup is
+ * inserted into the transcript or the note and nothing can be left behind.
+ *
+ * IN THE ONE HUE THIS APP ALLOWS ITSELF — see `--find` in tokens.css for why.
+ * It was a grey wash and a grey fill, monotonic like everything else, and on a
+ * dense transcript that put a match in the same ramp as a code block, a quote,
+ * a hover and a selected row: you were hunting a slightly different grey among
+ * six of them. A match is a wash of amber, the current one a solid block of it.
+ *
+ * Both set `color` as well as `background`. A highlight only repaints the
+ * ground under text that keeps whatever ink it had, so a pale amber wash under
+ * near-white body text in the dark theme would have erased the words it was
+ * meant to point at.
+ */
+::highlight(lanes-find) {
+  background: var(--find);
+  color: var(--onFind);
+}
+::highlight(lanes-find-current) {
+  background: var(--findNow);
+  color: var(--onFindNow);
+}
+
+/*
+ * COMMENTS — on the ramp, since a review's marks are facts about the document,
+ * not the transient answer a find is. READ and WRITE draw them alike (see
+ * components/Comments.tsx): the anchor's words washed and dotted under, colour
+ * only, so nothing moves; the comment put away, and a marker where it was.
+ */
+.cmt-anchor,
+.lanes-ed .cm-md-anchor {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  border-radius: 2px;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--faint);
+  text-underline-offset: 3px;
+  transition: background 0.12s ease;
+}
+.cmt-anchor.cmt-hot,
+.lanes-ed .cm-md-anchor.cmt-hot {
+  background: color-mix(in srgb, var(--ink) 13%, transparent);
+  text-decoration-color: var(--mute);
+}
+/* The marker: a small bubble at the comment's point. Inline, so the line
+   wraps where it would without it; never part of a selection or a copy. */
+.cmt-at {
+  display: inline-block;
+  vertical-align: -1px;
+  margin: 0 1px 0 2px;
+  color: var(--mute);
+  cursor: pointer;
+  user-select: none;
+}
+.cmt-at:hover {
+  color: var(--ink);
+}
+/* Where the margin holds the comment, its anchor needs no marker: the wash
+   says where it is. A comment at a point keeps its marker everywhere. */
+[data-cmt-room='1'] .cmt-at:not([data-cmt-bare]) {
+  display: none;
+}
+.cmt-at.cmt-free {
+  cursor: default;
+}
+.cmt-card {
+  box-sizing: border-box;
+  padding: 7px 10px 8px;
+  border-radius: 7px;
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--edge);
+  font: 400 11.5px/1.5 var(--sans);
+  color: var(--ink3);
+  overflow-wrap: anywhere;
+  user-select: text;
+  transition:
+    box-shadow 0.12s ease,
+    color 0.12s ease;
+}
+.cmt-card-hot {
+  color: var(--ink);
+  box-shadow:
+    inset 0 0 0 1px var(--rule),
+    var(--sh1);
+}
+/* The field a comment is written in: a raised card, over what is under it. */
+.cmt-slot {
+  box-sizing: border-box;
+}
+.cmt-card.cmt-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 9px 10px 7px;
+  background: var(--raise);
+  color: var(--ink);
+  box-shadow:
+    0 0 0 1px var(--edge),
+    var(--sh4);
+  animation: riseIn 0.12s ease-out;
+}
+.cmt-field-on {
+  font: 400 10.5px/1.4 var(--sans);
+  color: var(--mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cmt-field-on span {
+  color: var(--ink3);
+}
+.cmt-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 20px;
+  resize: none;
+  overflow: hidden;
+  border: none;
+  outline: none;
+  padding: 0;
+  background: transparent;
+  font: 400 12px/1.5 var(--sans);
+  color: var(--ink);
+}
+.cmt-field textarea::placeholder {
+  color: var(--faint);
+}
+.cmt-field-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 5px;
+  border-top: 1px solid var(--div2);
+}
+.cmt-field-hint {
+  font: 400 9.5px var(--mono);
+  color: var(--faint);
+}
+.cmt-field button {
+  font: 500 10.5px var(--sans);
+  color: var(--ink2);
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  cursor: pointer;
+}
+.cmt-field button:hover,
+.cmt-field button:focus-visible {
+  background: var(--chip);
+  outline: none;
+}
+/* Asking before it throws words away: the answer that keeps them is the one focused. */
+.cmt-ask {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0 2px;
+  font: 400 11px var(--sans);
+  color: var(--ink);
+}
+.cmt-ask button[data-cmt-keep] {
+  font-weight: 600;
+  color: var(--ink);
+}
+.cmt-ask button.cmt-discard {
+  color: var(--ink3);
+}
+/* Landed on from ⌘K: the comment's words, lit for a moment — colour only. */
+.cmt-anchor.cmt-flash,
+.lanes-ed .cm-md-anchor.cmt-flash,
+.cmt-at.cmt-flash {
+  animation: cmtFlash 1.6s ease-out;
+}
+@keyframes cmtFlash {
+  0%,
+  35% {
+    background: color-mix(in srgb, var(--ink) 26%, transparent);
+  }
+  100% {
+    background: color-mix(in srgb, var(--ink) 6%, transparent);
+  }
+}
+/* Opened under its line, where there is no margin: over the words below it. */
+.cmt-card-under {
+  background: var(--raise);
+  box-shadow:
+    0 0 0 1px var(--edge),
+    var(--sh4);
+  color: var(--ink2);
+  animation: riseIn 0.12s ease-out;
+}
+
+/*
+ * ---------- the note outline ----------
+ * Rows and both toggles are real buttons, so they carry a button's defaults
+ * and need them cleared; hover is an opacity change rather than a wash,
+ * because the outline has no ground of its own to wash.
+ */
+.toc-btn {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.toc-head:hover {
+  opacity: 0.55;
+}
+.toc-row:hover {
+  opacity: 0.6;
+}
+.toc-ticks:hover {
+  opacity: 0.5;
+}
+.toc-pin:hover {
+  opacity: 1 !important;
+}
+.head-place:hover {
+  background: var(--hov);
+  color: var(--ink2) !important;
+}
+.to-bottom:hover {
+  background: var(--quiet) !important;
+  box-shadow: 0 0 0 1px var(--rule), var(--sh1h) !important;
+}
+/* The question esc asks: a button under the pointer lifts, and the focused one
+   — keep writing, until you move it — says so with the app's focus ring. */
+.leave-btn:hover {
+  filter: brightness(0.97);
+}
+:root[data-theme='dark'] .leave-btn:hover {
+  filter: brightness(1.12);
+}
+.leave-btn:focus-visible,
+.leave-btn:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* The way to the start of the message above: quieter than the way down — no
+   cast of its own until the pointer is on it. */
+.to-start:hover {
+  background: var(--quiet) !important;
+  box-shadow: 0 0 0 1px var(--rule), var(--sh1) !important;
+}
+.to-start:hover svg {
+  stroke: var(--ink3);
+}
+
+/*
+ * ---------- the compact bar ----------
+ * Frosted paper, so the page reads as going on under it rather than stopping
+ * at a slab of white: the card's warm tone — one step off the sheet, the way a
+ * card sits on it everywhere else — thinned, over a blur of the words
+ * scrolling beneath. A hairline and a short soft fall, rather than a ruled
+ * edge — raised a little off the page. Its width is a container, so the meta
+ * line can step aside whole on a narrow pane rather than end in a lone `…`.
+ */
+.compact-bar {
+  container-type: inline-size;
+  background: color-mix(in srgb, var(--card) 82%, transparent);
+  -webkit-backdrop-filter: saturate(1.6) blur(18px);
+  backdrop-filter: saturate(1.6) blur(18px);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--hair) 80%, transparent),
+    0 12px 18px -16px rgba(35, 33, 29, 0.3);
+}
+:root[data-theme='dark'] .compact-bar {
+  box-shadow:
+    0 1px 0 var(--hair),
+    0 12px 18px -16px rgba(0, 0, 0, 0.75);
+}
+@container (max-width: 480px) {
+  .compact-meta {
+    display: none;
+  }
+}
+.toc-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/*
+ * ---------- v2 component rules ----------
+ * Kept so the components that have not been rebuilt yet keep their hover
+ * behaviour on the new ground. Each block goes when its component does.
+ */
+.hoverable:hover {
+  border-color: var(--rule) !important;
+}
+.tab:not(.tab-on):hover {
+  background: var(--hov) !important;
+}
+.tab-x:hover {
+  background: var(--chip);
+  color: var(--ink) !important;
+}
+.tool-row {
+  opacity: 0.62;
+}
+.tool-row:hover {
+  opacity: 1;
+}
+.tab-busy {
+  display: flex;
+}
+.tab:hover .tab-busy {
+  display: none;
+}
+.tab-x-busy {
+  display: none !important;
+}
+.tab:hover .tab-x-busy {
+  display: flex !important;
+}
+/*
+ * ---------- copy this block ----------
+ *
+ * A word in the corner of a code card, absent until the card is under the
+ * pointer. Absent rather than dim: a transcript can be forty code blocks long,
+ * and forty visible controls is a toolbar rather than a document.
+ *
+ * `pointer-events: none` while hidden, or the corner of every block is an
+ * invisible click target. Keyboard focus does not go through pointer-events, so
+ * Tab still reaches it — and `:focus-visible` shows it once it has arrived.
+ */
+.copy-chip {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  z-index: 2;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--sheet);
+  box-shadow: inset 0 0 0 1px var(--edge);
+  font: 400 10px var(--sans);
+  color: var(--mute);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.11s ease-out;
+}
+.copy-host:hover > .copy-chip,
+.copy-chip:focus-visible,
+/* A confirmation you cannot see has not confirmed anything: it stays up for
+   its 1400ms whether or not the pointer stayed. */
+.copy-chip[data-copied='1'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+.copy-chip:hover {
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+.copy-chip[data-copied='1'] {
+  color: var(--ink);
+}
+
+.note-copy:hover {
+  color: var(--ink) !important;
+  background: var(--hov);
+  border-radius: 3px;
+}
+.split-seam:hover {
+  background: var(--rule);
+}
+.task-box:hover {
+  border-color: var(--ink) !important;
+}
+.composer-grip:hover {
+  background: var(--edge);
+}
+.note-row:hover {
+  background: var(--hov) !important;
+}
+.mark-cell:hover {
+  background: var(--pinhov);
+}
+.rail-handle:hover {
+  color: var(--ink) !important;
+}
+.rail-seam:hover {
+  background: var(--edge) !important;
+}
+.rail-edge:hover {
+  background: var(--hov) !important;
+}
+.sort-cycle:hover {
+  color: var(--ink) !important;
+}
+.pal-row:hover,
+.ctx-item:hover {
+  background: var(--hov);
+}
+.msg-actions {
+  opacity: 0;
+  transition: opacity 90ms ease-out;
+}
+.msg-row:hover .msg-actions {
+  opacity: 1;
+}
+.msg-action:hover {
+  color: var(--ink);
+  background: var(--hov);
+}
+
+/*
+ * The rail's slide is the one motion in the app long enough to be felt, so it
+ * is also the one that has to answer to the system setting. Reduced motion
+ * keeps the collapse — it just arrives at the end state immediately.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-rail-shell],
+  [data-rail-shell] > * {
+    transition: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * THE WRITING SURFACE
+ *
+ * The note as a document you type into — see components/NoteEditor.tsx and
+ * lib/editorLive.ts. Every size here is READ's, from components/Doc.tsx, and
+ * that is the whole point of it: ⌘E between the two must not change the size of
+ * a single word. `--s` is Settings → text size, so ⌘+ and ⌘− scale both
+ * surfaces alike.
+ *
+ * The editor is not its own scroller. The pane scrolls, head and all, exactly
+ * as it does in READ; CodeMirror measures its viewport against that.
+ * ------------------------------------------------------------------------- */
+.lanes-ed {
+  --ed-li: calc(20px * var(--s, 1));
+  --ed-task: calc(22px * var(--s, 1));
+  /* A blank line between two blocks is a line, as it is in a text file and in
+     iA Writer: drawn at the body's own line height, so it needs no rule of its
+     own. READ leaves the same between two blocks a blank line parts (PAUSE in
+     components/Doc.tsx), so ⌘E moves no paragraph. */
+  /* A blank line beside a heading is the heading's air, not a pause. The
+     headings subtract it from their own spacing (below), so the distance from
+     a heading to its words is READ's. */
+  --ed-blank: calc(8px * var(--s, 1));
+}
+.lanes-ed .cm-editor {
+  font: 400 calc(13.5px * var(--s, 1)) / 1.78 var(--sans);
+  color: var(--body);
+  background: transparent;
+}
+.lanes-ed .cm-editor.cm-focused {
+  outline: none;
+}
+.lanes-ed .cm-editor .cm-scroller {
+  font-family: inherit;
+  line-height: inherit;
+  overflow: visible;
+}
+.lanes-ed .cm-editor .cm-content {
+  padding: 0;
+  caret-color: var(--ink);
+}
+.lanes-ed .cm-editor .cm-line {
+  padding: 0;
+}
+.lanes-ed .cm-content ::selection {
+  background: var(--pick);
+}
+/* The room under the last line: a click in it is a click at the end. */
+.lanes-ed-tail {
+  min-height: 22vh;
+  cursor: text;
+}
+
+/* An empty body says so, faintly, and takes no clicks from the line it is on. */
+.lanes-ed .cm-md-hint {
+  color: var(--faint);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* A blank line between two paragraphs is a whole line, and nothing moves when
+   the caret steps onto it. Beside a heading it is the air the heading gives up,
+   short until the caret stands on it. */
+.lanes-ed .cm-line.cm-md-blank.cm-md-by-h {
+  line-height: var(--ed-blank);
+}
+.lanes-ed .cm-line.cm-md-blank.cm-md-here {
+  line-height: inherit;
+}
+
+/* A mark put away: text that makes no box at all — so no point where a line
+   could break beside it, and nothing for a click to land on. Zero-size text
+   was tried first and misled the editor's click mapping: a click past the end
+   of a line landed inside the first hidden link. See `inline` in
+   lib/editorLive.ts. */
+.lanes-ed .cm-md-hide {
+  display: none;
+}
+
+/* ---- headings: READ's ladder, size for size ---- */
+.lanes-ed .cm-line.cm-md-h {
+  color: var(--ink);
+  font-weight: 600;
+}
+.lanes-ed .cm-line.cm-md-h1 {
+  font: 600 calc(18px * var(--s, 1)) / 1.3 var(--sans);
+  letter-spacing: -0.012em;
+  padding: 10px 0 6px;
+}
+/* `##` opens a section: tracked caps over a hairline, 30px of air above the
+   rule and 13 under it. In caps on the caret's line too: a heading whose letters
+   changed as the caret crossed it would flicker under the eye. */
+.lanes-ed .cm-line.cm-md-h2 {
+  font: 600 calc(10.5px * var(--s, 1)) / 1.4 var(--mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 43px 0 9px;
+  background: linear-gradient(var(--hr), var(--hr)) no-repeat 0 30px / 100% 1px;
+}
+.lanes-ed .cm-line.cm-md-h2.cm-md-top {
+  padding-top: 0;
+  background: none;
+}
+/* Headings give up the blank line beside them: that line is already the air
+   READ puts there, and adding it again would move everything on ⌘E. */
+.lanes-ed .cm-line.cm-md-h1.cm-md-gap-above {
+  padding-top: max(0px, calc(12px - var(--ed-blank)));
+}
+.lanes-ed .cm-line.cm-md-h2.cm-md-gap-above:not(.cm-md-top) {
+  padding-top: calc(45px - var(--ed-blank));
+  background-position: 0 calc(32px - var(--ed-blank));
+}
+.lanes-ed .cm-line.cm-md-h3.cm-md-gap-above {
+  padding-top: calc(24px - var(--ed-blank));
+}
+.lanes-ed .cm-line.cm-md-h4.cm-md-gap-above {
+  padding-top: calc(18px - var(--ed-blank));
+}
+.lanes-ed .cm-line.cm-md-h.cm-md-gap-below {
+  padding-bottom: 0;
+}
+.lanes-ed .cm-line.cm-md-h2.cm-md-gap-below {
+  padding-bottom: max(0px, calc(10px - var(--ed-blank)));
+}
+.lanes-ed .cm-line.cm-md-h3 {
+  font: 600 calc(14.5px * var(--s, 1)) / 1.4 var(--sans);
+  letter-spacing: -0.006em;
+  padding: 22px 0 4px;
+}
+.lanes-ed .cm-line.cm-md-h4 {
+  font: 600 calc(12.5px * var(--s, 1)) / 1.45 var(--sans);
+  letter-spacing: 0.005em;
+  color: var(--ink3);
+  padding: 16px 0 2px;
+}
+/* The hashes hang in the margin, the way iA Writer hangs them: out of the
+   words' way, so showing them moves nothing. */
+.lanes-ed .cm-md-hmark {
+  position: absolute;
+  transform: translateX(calc(-100% - 0.5em));
+  color: var(--faint);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: pre;
+}
+.lanes-ed .cm-md-hmark.cm-md-off {
+  visibility: hidden;
+}
+
+/* ---- lists and tasks ---- */
+.lanes-ed .cm-line.cm-md-li {
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+.lanes-ed .cm-md-bullet,
+.lanes-ed .cm-md-indent,
+.lanes-ed .cm-md-taskcol {
+  display: inline-block;
+  box-sizing: border-box;
+  text-indent: 0;
+}
+.lanes-ed .cm-md-bullet {
+  font: 400 calc(10px * var(--s, 1)) / 1 var(--mono);
+  color: var(--mute);
+}
+.lanes-ed .cm-md-olmark {
+  display: inline-block;
+  min-width: var(--ed-li);
+  text-indent: 0;
+  font: 400 calc(10px * var(--s, 1)) / 1 var(--mono);
+  color: var(--mute);
+}
+.lanes-ed .cm-md-taskcol {
+  line-height: 1;
+  vertical-align: calc(-2px * var(--s, 1));
+}
+/* A ring when open, a fill when done — an inset shadow rather than a border,
+   so the box does not change size as it fills. */
+.lanes-ed .cm-md-task {
+  position: relative;
+  display: inline-block;
+  width: calc(14px * var(--s, 1));
+  height: calc(14px * var(--s, 1));
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1.5px var(--rule);
+  cursor: pointer;
+}
+.lanes-ed .cm-md-task:hover {
+  box-shadow: inset 0 0 0 1.5px var(--ink3);
+}
+.lanes-ed .cm-md-task[data-done='1'] {
+  /* Done is settled, not loud: a filled box in full ink was the brightest mark
+     on a dark page. The same quieter fill READ uses. */
+  background: var(--ink3);
+  box-shadow: none;
+}
+.lanes-ed .cm-md-task[data-done='1']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--onInk);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3.5 7.2l2.4 2.4 4.6-5' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 100% no-repeat;
+}
+.lanes-ed .cm-line.cm-md-done {
+  color: var(--mute);
+  text-decoration: line-through;
+  text-decoration-color: var(--faint);
+}
+
+/* ---- quotes, rules ---- */
+.lanes-ed .cm-line.cm-md-quote {
+  padding-left: 18px;
+  box-shadow: inset 2px 0 0 var(--track);
+  color: var(--ink3);
+  font-style: italic;
+}
+.lanes-ed .cm-line.cm-md-hr {
+  color: transparent;
+  background: linear-gradient(var(--hr), var(--hr)) no-repeat 0 50% / 100% 1px;
+}
+.lanes-ed .cm-line.cm-md-hr.cm-md-here {
+  color: var(--faint);
+}
+
+/* ---- the runs the parse tree owns ---- */
+.lanes-ed .cm-line.cm-md-code {
+  font: 400 calc(11.5px * var(--s, 1)) / 1.75 var(--mono);
+  color: var(--ink3);
+  background: var(--code);
+  padding: 0 14px;
+}
+.lanes-ed .cm-line.cm-md-code-first {
+  padding-top: 12px;
+  border-top-left-radius: 7px;
+  border-top-right-radius: 7px;
+}
+.lanes-ed .cm-line.cm-md-code-last {
+  padding-bottom: 12px;
+  border-bottom-left-radius: 7px;
+  border-bottom-right-radius: 7px;
+}
+.lanes-ed .cm-line.cm-md-fence {
+  color: var(--faint);
+}
+/* Away from the caret a fence line folds to nothing and the block reads as
+   READ draws it — the code in its card. The card's own padding stays. */
+.lanes-ed .cm-line.cm-md-fence.cm-md-fence-off {
+  font-size: 0;
+  line-height: 0;
+}
+.lanes-ed .cm-line.cm-md-table {
+  font: 400 calc(11.5px * var(--s, 1)) / 1.75 var(--mono);
+  color: var(--ink3);
+}
+.lanes-ed .cm-line.cm-md-html {
+  font: 400 calc(11.5px * var(--s, 1)) / 1.75 var(--mono);
+  color: var(--faint);
+}
+
+/* ---- inline ---- */
+.lanes-ed .cm-md-mark {
+  color: var(--faint);
+  font-weight: 400;
+  font-style: normal;
+}
+.lanes-ed .cm-md-strong {
+  font-weight: 600;
+}
+/* `==words==` — the marker colour READ draws, and nothing that moves a word. */
+.lanes-ed .cm-md-highlight {
+  background: var(--hl);
+}
+.lanes-ed .cm-md-em {
+  font-style: italic;
+}
+.lanes-ed .cm-md-codespan {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  background: var(--div2);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+.lanes-ed .cm-md-link,
+.lanes-ed .cm-md-wiki {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent);
+  text-underline-offset: 2px;
+}
+/* ⌘ held: a link says it can be followed. Without it, a click is a caret. */
+.lanes-ed .cm-meta .cm-md-link,
+.lanes-ed .cm-meta .cm-md-wiki {
+  cursor: pointer;
+  text-decoration-color: var(--ink);
+}
+
+/* ---- find ---- */
+.lanes-ed .cm-find {
+  background: var(--find);
+  color: var(--onFind);
+  border-radius: 2px;
+}
+.lanes-ed .cm-find.cm-find-now {
+  background: var(--findNow);
+  color: var(--onFindNow);
+}
+
+/* ---- focus mode: every paragraph but yours, stood down ---- */
+.lanes-ed .cm-line {
+  transition: opacity 120ms ease-out;
+}
+.lanes-ed .cm-line.cm-md-dim {
+  opacity: 0.26;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lanes-ed .cm-line {
+    transition: none;
+  }
+}
+
+/*
+ * An answer arriving on a tab you are not looking at. One beat, once — the dot
+ * comes in slightly over full size and settles, which the eye catches at the
+ * edge of vision without anything moving afterwards.
+ */
+@keyframes dotArrive {
+  from {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  62% {
+    transform: scale(1.35);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes dotArrive {
+    from,
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * A COLLAPSIBLE SECTION — `<details><summary>` in a note.
+ *
+ * The browser's own disclosure, restyled rather than replaced: keyboard
+ * operable and announced correctly for free, and ⌘F finds inside a closed one
+ * and opens it. All this does is take away the default triangle and put the
+ * app's own row in its place — a chevron that turns, a label, and a rule that
+ * carries the eye across so the row reads as a divider rather than a sentence.
+ * ------------------------------------------------------------------------- */
+.fold {
+  margin: 16px 0 10px;
+}
+.fold > summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 0;
+  cursor: pointer;
+  user-select: none;
+  /* Both, because Safari and Chromium disagree about which one is the marker. */
+  list-style: none;
+}
+.fold > summary::-webkit-details-marker,
+.fold > summary::marker {
+  display: none;
+  content: '';
+}
+.fold > summary:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+.fold-chev {
+  flex: none;
+  transition: transform 130ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.fold[open] > summary .fold-chev {
+  transform: rotate(90deg);
+}
+.fold > summary:hover .fold-label {
+  color: var(--ink) !important;
+}
+.fold-rule {
+  flex: 1;
+  height: 1px;
+  min-width: 12px;
+  background: var(--hr);
+}
+/* The body hangs off a hairline, the way a blockquote does — one glance says
+   what belongs to the fold and what is the note again. */
+.fold-body {
+  margin: 3px 0 2px 3px;
+  padding-left: 15px;
+  border-left: 1px solid var(--hair);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fold-chev {
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * PAPER — the note in a hidden window, on its way to a PDF.
+ *
+ * `printToPDF` owns the sheet size and its margins (see main/pdf.ts, where they
+ * are inches). What is left for CSS is the two things a page needs that a
+ * scrollport does not: room to breathe at the column, and rules about where a
+ * page is allowed to break. Everything else the document already knows — this
+ * is the same stylesheet and the same components the pane draws with.
+ * ------------------------------------------------------------------------- */
+/*
+ * The sheet, edge to edge. `html`, `body` and `#root` all carry the DESK in the
+ * app — which on paper is a grey border round the column, and ink spent on it.
+ *
+ * `#root` has to be named explicitly: it is an ID selector at the top of this
+ * file, and an ID outranks any attribute selector, so a rule that covered only
+ * `html` and `body` left the middle layer grey. The heights go with it — the
+ * app is a 100vh box that does not scroll, and a page is as tall as it is.
+ */
+html[data-print-page='1'],
+html[data-print-page='1'] body,
+html[data-print-page='1'] #root {
+  background: var(--sheet);
+  height: auto;
+  overflow: visible;
+}
+[data-print='1'] {
+  padding-top: 4px;
+}
+/* A heading belongs to what follows it. */
+[data-print='1'] [data-md-from] > * {
+  break-inside: avoid;
+}
+[data-print='1'] [data-toc^='h'],
+[data-print='1'] h1,
+[data-print='1'] h2,
+[data-print='1'] h3 {
+  break-after: avoid;
+}
+/* A fold prints as whatever it is; a closed one still shows its summary, so the
+   page says a section was there rather than losing it silently. */
+[data-print='1'] details {
+  break-inside: avoid;
+}
+/* Links keep their rule but not their promise: a PDF cannot follow a
+   [[wikilink]], so it reads as the emphasis it is. */
+@media print {
+  a {
+    text-decoration-color: var(--rule);
+  }
+}
+
+/*
+ * The fork rail: one tick per seam, down the transcript's left margin. Hover
+ * widens rather than colours — there is no hue in this palette to reach for,
+ * and a mark that grows is the same grammar the note outline's ticks use.
+ */
+.path-dot {
+  transition:
+    box-shadow 90ms ease-out,
+    background 90ms ease-out;
+}
+/* The button is the hit area and stays invisible; the dot inside it is what
+   answers the pointer. Ink on hover, and a ring wide enough to feel aimed at. */
+.path-tick:hover .path-dot,
+.path-tick:focus-visible .path-dot {
+  background: var(--ink) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 14%, transparent) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .path-dot {
+    transition: none;
+  }
+}
+
+/* A note's title field in WRITE: an untitled note says so, faintly, until named. */
+.note-title:empty::before {
+  content: attr(data-placeholder);
+  color: var(--faint);
+  pointer-events: none;
+}
+
+/* `[[` offering the vault's notes. Mounted on the page so the pane cannot clip
+   it — which is also why it is styled here rather than under `.lanes-ed`. The
+   class is doubled on purpose: CodeMirror's own theme reaches these elements
+   through a generated scope class, and a single class loses to it. */
+.cm-tooltip.lanes-complete.lanes-complete {
+  border: none;
+  border-radius: 7px;
+  background: var(--raise);
+  color: var(--ink);
+  box-shadow:
+    0 0 0 1px var(--edge),
+    var(--sh4);
+  padding: 4px 0;
+  overflow: hidden;
+}
+.cm-tooltip.cm-tooltip-autocomplete.lanes-complete.lanes-complete > ul {
+  font: 400 12px / 1.4 var(--sans);
+  max-height: 16em;
+  min-width: 260px;
+  max-width: min(440px, 90vw);
+}
+.cm-tooltip.cm-tooltip-autocomplete.lanes-complete.lanes-complete > ul > li {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 12px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.cm-tooltip.lanes-complete.lanes-complete ul li[aria-selected] {
+  /* Mixed from the ink rather than a token: on a raised surface the app's
+     selection tone is darker than the ground in the dark theme, and a chosen
+     row that reads as a dip is not chosen-looking. */
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+  color: var(--ink);
+}
+.cm-tooltip.lanes-complete.lanes-complete .cm-completionLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cm-tooltip.lanes-complete.lanes-complete .cm-completionDetail {
+  font: 400 9px var(--mono);
+  font-style: normal;
+  letter-spacing: 0.06em;
+  color: var(--mute);
+  margin-left: 0;
+  flex: none;
+}
+.cm-tooltip.lanes-complete.lanes-complete .cm-completionMatchedText {
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* A lane's name in Settings, renamed where it stands: read as text until it
+   is pointed at or typed in, when it shows itself as the field it is. The
+   field's own border and sheet are inline, so these win over them. */
+.lane-name {
+  border-color: transparent !important;
+  background: transparent !important;
+}
+.lane-name:hover,
+.lane-name:focus {
+  border-color: var(--rule) !important;
+  background: var(--sheet) !important;
+  outline: none;
+}
+/* The rail's "Update ready" (components/UpdateLine.tsx): one button that does
+   it, and one that does not — small, as everything at the rail's foot is. */
+.update-go,
+.update-quiet {
+  font: 600 10.5px var(--sans);
+  border: none;
+  border-radius: 6px;
+  padding: 5px 11px;
+  cursor: pointer;
+  flex: none;
+}
+.update-go {
+  background: var(--ink);
+  color: var(--onInk);
+}
+.update-quiet {
+  font-weight: 500;
+  background: transparent;
+  color: var(--ink2);
+  margin: 0 -6px 0 0;
+  padding: 3px 6px;
+}
+.update-go:focus-visible,
+.update-quiet:hover,
+.update-quiet:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--chip);
+}
+.update-quiet:hover,
+.update-quiet:focus-visible {
+  background: var(--chip);
+  box-shadow: none;
+}
